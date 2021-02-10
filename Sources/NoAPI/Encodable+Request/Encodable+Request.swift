@@ -10,37 +10,66 @@ import Mergeable
 import CodableUtils
 
 public extension Encodable {
-    
+    /**
+     Creates request using self as request type
+     - Parameters:
+        - scheme: scheme URL subcomponent
+        - host: host URL subcomponent
+        - path: path subcomponent. Self simplepathName is added appended to the pathname passed.
+        - res: Response type
+        - heads: optional dictionary containing the headers of the request.
+     - returns: Request created with the parameters.
+     - note: This method uses default JSONEncoder and default JSONDecoder.
+     */
     @discardableResult
-    func request<Res: Decodable>(scheme: String?,
+    func inclusiveRequest<Res: Decodable>(scheme: String?,
                                  host: String?,
+                                 path: String?,
                                  method: HTTPMethod,
                                  res: Res.Type,
-                                 heads: [String: String]? = nil,
-                                 encoder: JSONEncoder? = nil,
-                                 decoder: JSONDecoder? = nil) -> Request<Self, Res> {
-        let path = self.pathComponent()
-        return self.makeRequest(scheme: scheme, host: host, path: path, method: method, res: res, req: self, heads: heads, encoder: encoder, decoder: decoder)
+                                 heads: [String: String]? = nil) -> Request<Self, Res> {
+        var outrightPath = path ?? ""
+        outrightPath += self.simplePathComponent
+        return self.makeRequest(scheme: scheme, host: host, path: outrightPath, method: method, res: res, req: self, heads: heads)
     }
     
+    /**
+     Creates fully customizable request.
+     - Parameters:
+        - scheme: scheme URL subcomponent
+        - host: host URL subcomponent
+        - path: path subcomponent.
+        - res: Response type
+        - req: The codable object with whom body or query items will be built.
+        - heads: optional dictionary containing the headers of the request.
+     - returns: Request created with the parameters.
+     */
     @discardableResult
     func request<Req: Encodable, Res: Decodable>(scheme: String?,
                                                  host: String?,
+                                                 path: String?,
                                                  method: HTTPMethod,
                                                  res: Res.Type,
-                                                 req: Req? = nil,
+                                                 req: Req?,
                                                  heads: [String: String]? = nil,
                                                  encoder: JSONEncoder? = nil,
                                                  decoder: JSONDecoder? = nil) -> Request<Req, Res> {
-        let path = self.pathComponent(req: req)
-        return self.makeRequest(scheme: scheme, host: host, path: path, method: method, res: res, req: req, heads: heads, encoder: encoder, decoder: decoder)
+        self.makeRequest(scheme: scheme,
+                         host: host,
+                         path: path,
+                         method: method,
+                         res: res,
+                         req: req,
+                         heads: heads,
+                         encoder: encoder,
+                         decoder: decoder)
     }
     
 
     
-    func makeRequest<Req: Encodable, Res: Decodable>(scheme: String?,
+    internal func makeRequest<Req: Encodable, Res: Decodable>(scheme: String?,
                                                      host: String?,
-                                                     path: String,
+                                                     path: String?,
                                                      method: HTTPMethod,
                                                      res: Res.Type,
                                                      req: Req?,
