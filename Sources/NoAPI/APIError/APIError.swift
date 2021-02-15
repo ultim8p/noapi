@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum APIError: Error {
+public enum APIError: Error {
     case invalidUrl
     case invalidResponseType
     case status(code: APIStatusCode)

@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum APIStatusCode: Int {
+public enum APIStatusCode: Int {
     case none = 0
     
     case continues = 100
